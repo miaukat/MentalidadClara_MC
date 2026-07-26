@@ -1,0 +1,55 @@
+{% extends 'mentalidad_app/home.html' %}
+{% load static %}
+
+{% block title %}Verificar PIN - Mentalidad Clara{% endblock %}
+
+{% block contenido %}
+<style>
+    /* Ocultar la barra de navegación superior en esta vista específica */
+    header, nav, .navbar, .menu-superior {
+        display: none !important;
+    }
+</style>
+
+<!-- Fondo con imagen en tonos verdes y tranquilidad -->
+<div style="background-image: linear-gradient(rgba(45, 74, 62, 0.65), rgba(45, 74, 62, 0.65)), url('https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1600&auto=format&fit=crop'); background-size: cover; background-position: center; min-height: 85vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+    
+    <!-- Cuadro central flotante -->
+    <div style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 35px; width: 100%; max-width: 420px; box-shadow: 0 15px 45px rgba(0,0,0,0.3); text-align: center;">
+        
+        <span style="font-size: 45px;">🔒</span>
+        <h3 style="color: #2D4A3E; margin-top: 10px; margin-bottom: 8px; font-size: 22px;">Diario Protegido</h3>
+        <p style="color: #666; font-size: 13px; margin-bottom: 25px;">Ingresa tu PIN de seguridad de 6 dígitos para acceder a tus pensamientos.</p>
+
+        <!-- Mensajes de error o alerta -->
+        {% if messages %}
+            {% for message in messages %}
+                <div style="background: #FDEDEC; color: #78281F; border: 1px solid #F5B7B1; padding: 10px 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; font-weight: 600;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <!-- Campo oculto para que la vista sepa que se está verificando el PIN -->
+            <input type="hidden" name="verificar_pin" value="1">
+
+            <div style="margin-bottom: 25px;">
+                <input type="password" name="pin_ingresado" maxlength="6" pattern="\d{6}" inputmode="numeric" required autofocus placeholder="••••••" style="width: 80%; padding: 14px; font-size: 24px; text-align: center; letter-spacing: 10px; border: 1px solid #CCC; border-radius: 10px; box-sizing: border-box;">
+            </div>
+
+            <!-- Botones de Acción -->
+            <div style="display: flex; gap: 12px; flex-direction: column;">
+                <button type="submit" style="width: 100%; padding: 12px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; background-color: #4A7C59; color: white; font-size: 15px;">
+                    Desbloquear Diario
+                </button>
+                <a href="{% url 'dashboard_paciente' %}" style="color: #666; text-decoration: none; font-size: 13px; font-weight: 600; margin-top: 5px;">
+                    ← Volver al Panel Principal
+                </a>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

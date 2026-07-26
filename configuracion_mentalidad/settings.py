@@ -131,12 +131,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Cuando vayan a producción con Gmail u Outlook, usarán:
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'tu_correo@gmail.com'
-EMAIL_HOST_PASSWORD = 'tu_contraseña_de_aplicacion'
 
 LOGIN_URL = 'login'
 
@@ -145,11 +139,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'mentalidadclara.soporte@gmail.com'
-EMAIL_HOST_PASSWORD = 'qtkt lpwv xodb iygs'  # Tu contraseña de aplicación limpia
-DEFAULT_FROM_EMAIL = 'Mentalidad Clara <mentalidadclara.soporte@gmail.com>'
-
-import os
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = f'Mentalidad Clara <{EMAIL_HOST_USER}>'

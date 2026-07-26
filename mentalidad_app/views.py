@@ -27,15 +27,11 @@ from django.db.models import Q
 import json
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-import os
-from .forms import PerfilForm
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
+
 
 
 
 def home(request):
-    # Quitamos la redirección automática forzada para evitar bucles si la sesión interfiere
     return render(request, 'mentalidad_app/home.html')
 
 def home(request):
@@ -60,19 +56,19 @@ def registro_usuario(request):
         apellido = request.POST.get('last_name')
         telefono = request.POST.get('telefono', '')
 
-        # 1️⃣ Validar si el nombre de usuario ya existe
+        # 1 Validar si el nombre de usuario ya existe
         if User.objects.filter(username=username).exists():
             return render(request, 'mentalidad_app/compartidos/registro.html', {
                 'error': 'El nombre de usuario ya está registrado. Por favor elige otro.'
             })
 
-        # 2️⃣ Validar si el correo electrónico ya está registrado (Correo Único)
+        # 2 Validar si el correo electrónico ya está registrado (Correo Único)
         if User.objects.filter(email=email).exists():
             return render(request, 'mentalidad_app/compartidos/registro.html', {
                 'error': 'Este correo electrónico ya está asociado a otra cuenta.'
             })
 
-        # 3️⃣ Validar que la contraseña sea segura usando las reglas de Django
+        # 3 Validar que la contraseña sea segura usando las reglas de Django
         try:
             validate_password(password)
         except ValidationError as e:
@@ -211,42 +207,6 @@ def restablecer_password(request):
         })
 
     return render(request, 'mentalidad_app/compartidos/restablecer_password.html')
-
-@login_required
-def actualizar_perfil(request):
-    perfil, created = PerfilUsuario.objects.get_or_create(usuario=request.user)
-
-    if request.method == 'POST':
-        # Le pasamos user=request.user al formulario en el POST
-        form = PerfilForm(request.POST, request.FILES, instance=perfil, user=request.user)
-        if form.is_valid():
-            if 'foto' in request.FILES:
-                if perfil.foto and os.path.isfile(perfil.foto.path):
-                    os.remove(perfil.foto.path)
-            
-            form.save()
-            return redirect('actualizar_perfil')
-    else:
-        # Y también aquí en el GET
-        form = PerfilForm(instance=perfil, user=request.user)
-
-    return render(request, 'mentalidad_app/compartidos/actualizar_perfil.html', {'form': form, 'perfil': perfil})
-
-@login_required
-def cambiar_credenciales(request):
-    if request.method == 'POST':
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)  # Mantiene la sesión activa
-            messages.success(request, '¡Tu contraseña ha sido actualizada con éxito!')
-            return redirect('home')
-        else:
-            messages.error(request, 'Por favor corrige los errores en el formulario.')
-    else:
-        form = PasswordChangeForm(request.user)
-    
-    return render(request, 'mentalidad_app/compartidos/cambiar_credenciales.html', {'form': form})
 
 
 #PACIENTE
@@ -400,67 +360,89 @@ def historial_emociones(request):
     return render(request, 'mentalidad_app/pacientes/historial_emociones.html', contexto)
 
 @login_required
+def bloquear_diario(request):
+    if 'diario_desbloqueado' in request.session:
+        del request.session['diario_desbloqueado']
+    return redirect('dashboard_paciente')
+
+@login_required
 def diario_personal(request):
-    # Obtener el perfil del usuario autenticado
     perfil = getattr(request.user, 'perfil', None)
     pin_guardado = perfil.pin_diario if perfil else None
+    tiene_pin = bool(pin_guardado)
 
-    # 1. VERIFICACIÓN DE PIN (si tiene PIN configurado y aún no se ha ingresado en la sesión)
-    if pin_guardado and not request.session.get('diario_desbloqueado', False):
-        if request.method == 'POST' and 'verificar_pin' in request.POST:
-            pin_ingresado = request.POST.get('pin_ingresado')
-            if pin_ingresado == pin_guardado:
-                request.session['diario_desbloqueado'] = True  # Desbloquear acceso en la sesión
-                return redirect('diario_personal')
-            else:
-                messages.error(request, 'PIN incorrecto. Inténtalo de nuevo.')
+    # 1. Seguridad: Si tiene PIN y no está desbloqueado en la sesión, lo mandamos a verificar
+    if tiene_pin and not request.session.get('diario_desbloqueado', False):
+        return redirect('verificar_pin_diario')
+
+    # 2. Acción para guardar o actualizar el PIN de seguridad (con validación de PIN repetido)
+    if request.method == 'POST' and 'guardar_pin' in request.POST:
+        nuevo_pin = request.POST.get('nuevo_pin')
         
-        return render(request, 'mentalidad_app/pacientes/verificar_pin_diario.html')
+        # Validar que el nuevo PIN no sea idéntico al anterior
+        if pin_guardado and nuevo_pin == pin_guardado:
+            messages.error(request, 'El nuevo PIN no puede ser igual al PIN anterior. Por favor, elige uno diferente.')
+            return redirect('diario_personal')
 
-    # 2. ACCIONES DEL DIARIO (Guardar nota o Configurar PIN)
-    if request.method == 'POST':
-        # Acciones para Guardar un Nuevo Escrito
-        if 'guardar_escrito' in request.POST:
-            titulo = request.POST.get('titulo')
-            contenido = request.POST.get('contenido')
-            
-            if titulo and contenido:
-                DiarioPersonal.objects.create(
-                    usuario=request.user,
-                    titulo=titulo,
-                    contenido=contenido
-                )
-                messages.success(request, '¡Entrada de diario guardada exitosamente!')
-                return redirect('diario_personal')
+        if perfil:
+            perfil.pin_diario = nuevo_pin
+            perfil.save()
+            request.session['diario_desbloqueado'] = True
+            messages.success(request, '¡PIN de seguridad guardado correctamente!')
+        return redirect('diario_personal')
 
-        # Acciones para Crear / Cambiar PIN de 6 dígitos
-        elif 'guardar_pin' in request.POST:
-            nuevo_pin = request.POST.get('nuevo_pin')
-            if nuevo_pin and len(nuevo_pin) == 6 and nuevo_pin.isdigit():
-                perfil.pin_diario = nuevo_pin
-                perfil.save()
-                request.session['diario_desbloqueado'] = True
-                messages.success(request, '¡PIN de seguridad de 6 dígitos configurado correctamente!')
-                return redirect('diario_personal')
-            else:
-                messages.error(request, 'El PIN debe contener exactamente 6 dígitos numéricos.')
+    # 3. Acción para guardar una nueva entrada en el diario
+    if request.method == 'POST' and 'guardar_escrito' in request.POST:
+        titulo = request.POST.get('titulo')
+        contenido = request.POST.get('contenido')
+        
+        DiarioPersonal.objects.create(
+            usuario=request.user,
+            titulo=titulo,
+            contenido=contenido
+        )
+        
+        messages.success(request, '¡Entrada guardada con éxito!')
+        return redirect('diario_personal')
 
-    # 3. CARGAR ENTRADAS Y ENTRADA SELECCIONADA PARA LEER
+    # 4. Consultar las entradas del usuario autenticado
     entradas = DiarioPersonal.objects.filter(usuario=request.user).order_by('-fecha')
-    
-    # Si la usuaria hace clic en "Entrar y Leer" un escrito en específico
+
+    # 5. Ver una entrada específica al hacer clic en "Entrar y Leer"
     entrada_id = request.GET.get('ver')
     entrada_seleccionada = None
     if entrada_id:
         entrada_seleccionada = get_object_or_404(DiarioPersonal, id=entrada_id, usuario=request.user)
 
     contexto = {
+        'tiene_pin': tiene_pin,
         'entradas': entradas,
         'entrada_seleccionada': entrada_seleccionada,
-        'tiene_pin': bool(pin_guardado)
     }
-    
     return render(request, 'mentalidad_app/pacientes/diario_personal.html', contexto)
+
+@login_required
+def verificar_pin_diario(request):
+    perfil = getattr(request.user, 'perfil', None)
+    pin_guardado = perfil.pin_diario if perfil else None
+    
+    # Si el usuario NO tiene PIN creado, no tiene sentido estar aquí, lo mandamos directo al diario
+    if not pin_guardado:
+        return redirect('diario_personal')
+        
+    # Si ya puso el PIN antes en esta sesión, lo mandamos directo al diario
+    if request.session.get('diario_desbloqueado', False):
+        return redirect('diario_personal')
+
+    if request.method == 'POST':
+        pin_ingresado = request.POST.get('pin_ingresado')
+        if pin_ingresado == pin_guardado:
+            request.session['diario_desbloqueado'] = True  # Desbloqueamos la sesión
+            return redirect('diario_personal')
+        else:
+            messages.error(request, 'PIN incorrecto. Inténtalo de nuevo.')
+
+    return render(request, 'mentalidad_app/pacientes/verificar_pin_diario.html')
 
 @login_required
 def agendar_cita(request):
@@ -499,10 +481,16 @@ def confirmar_cita(request, horario_id):
         return redirect('agendar_cita')
     
     if request.method == 'POST':
+        # Si presionó el botón de rechazar, nos salimos de inmediato sin validar nada
         if 'rechazar' in request.POST:
             return redirect('agendar_cita')
             
-        motivo = request.POST.get('motivo', '')
+        motivo = request.POST.get('motivo', '').strip()
+        
+        # Validamos que el motivo no esté vacío al confirmar
+        if not motivo:
+            messages.error(request, 'Por favor, escribe un motivo de consulta para continuar.')
+            return render(request, 'mentalidad_app/pacientes/confirmar_cita.html', {'horario': horario})
         
         # Creamos la cita en estado PENDIENTE
         cita = Cita.objects.create(
@@ -510,7 +498,7 @@ def confirmar_cita(request, horario_id):
             terapeuta=horario.terapeuta,
             horario=horario,
             motivo=motivo,
-            estado='PENDIENTE' # <-- Cambia de CONFIRMADA a PENDIENTE
+            estado='PENDIENTE'
         )
         
         messages.success(request, '¡Solicitud enviada! Tu terapeuta revisará la disponibilidad y te notificaremos cuando sea aceptada.')

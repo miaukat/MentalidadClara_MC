@@ -1,0 +1,1 @@
+web: gunicorn configuracion_mentalidad.wsgi:application

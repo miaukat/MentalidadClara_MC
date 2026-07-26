@@ -51,30 +51,6 @@
             {% if user.is_authenticated %}
                 <span class="usuario-navbar">Hola, {{ user.username }}</span>
                 
-                <!-- Menú desplegable de Configuración: Solo para PACIENTE o TERAPEUTA 
-               #<div class="dropdown-config" style="position: relative; display: inline-block;">
-                    <a href="javascript:void(0);" onclick="toggleMenuConfig()" title="Configuración de cuenta" style="background: rgba(255, 255, 255, 0.2); color: white; width: 34px; height: 34px; border-radius: 50%; text-decoration: none; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background 0.3s;">
-                        ⚙️
-                    </a>
-
-                    <!-- Caja desplegable (Oculta por defecto) 
-                    <div id="menuConfigDropdown" style="display: none; position: absolute; right: 0; top: 45px; background: white; min-width: 220px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); border-radius: 12px; overflow: hidden; z-index: 1000; border: 1px solid #eee; text-align: left;">
-                        <div style="padding: 12px 15px; background: #f9fbf9; border-bottom: 1px solid #eee;">
-                            <p style="margin: 0; font-size: 11px; color: #888; text-transform: uppercase;">Configuración</p>
-                            <p style="margin: 2px 0 0 0; font-size: 13px; font-weight: bold; color: #2D4A3E;">{{ user.username }}</p>
-                        </div>
-                        
-                        <!-- Opciones del menú corregidas 
-                        <a href="{% url 'actualizar_perfil' %}" style="display: block; padding: 10px 15px; color: #333; text-decoration: none; font-size: 13px; border-bottom: 1px solid #f5f5f5; transition: background 0.2s;">
-                            👤 Actualizar Foto de Perfil
-                        </a>
-                        <a href="{% url 'cambiar_credenciales' %}" style="display: block; padding: 10px 15px; color: #333; text-decoration: none; font-size: 13px; transition: background 0.2s;">
-                            🔑 Cambiar Contraseña / Correo
-                        </a>
-                    </div>
-                </div> 
-                {% endif %}-->
-
                 <a href="/logout/" class="btn-nav">Cerrar sesión</a>
             {% else %}
                 <a href="/login/" class="btn-nav btn-login">Iniciar sesión</a>
@@ -141,7 +117,7 @@
                     <p>Estamos comprometidos con tu proceso de bienestar.</p>
                     <div class="contact-details">
                         <p><strong>📞 Teléfono:</strong> +57 315 258 4556</p>
-                        <p><strong>📧 Email:</strong> mentalidadclara.soporte@gmail.com</p>
+                        <p><strong>📧 Email:</strong> infoMentalidadClara@gmail.com</p>
                     </div>
                 </div>
                 
@@ -162,26 +138,5 @@
         <p>&copy; 2026 Mentalidad Clara · SENA. Todos los derechos reservados.</p>
     </footer>
 
-    <!-- Script para abrir/cerrar el menú de la tuerca -->
-    <script>
-        function toggleMenuConfig() {
-            var menu = document.getElementById('menuConfigDropdown');
-            if (menu.style.display === 'none' || menu.style.display === '') {
-                menu.style.display = 'block';
-            } else {
-                menu.style.display = 'none';
-            }
-        }
-
-        // Ocultar el menú si hace clic fuera de él
-        window.onclick = function(event) {
-            if (!event.target.matches('.dropdown-config') && !event.target.closest('.dropdown-config')) {
-                var menu = document.getElementById('menuConfigDropdown');
-                if (menu && menu.style.display === 'block') {
-                    menu.style.display = 'none';
-                }
-            }
-        }
-    </script>
 </body>
 </html>

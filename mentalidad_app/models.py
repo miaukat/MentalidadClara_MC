@@ -48,26 +48,10 @@ class PerfilUsuario(models.Model):
         null=True
     )
     fecha_nacimiento = models.DateField(blank=True, null=True)
-    
-    # 🌟 NUEVO CAMPO DE BIOGRAFÍA / DESCRIPCIÓN PARA EL TERAPEUTA
-    biografia = models.TextField(blank=True, null=True, help_text="Descripción o perfil profesional para los pacientes")
 
     def __str__(self):
-        return f"{self.usuario.username} - {self.rol}"
-
-    def save(self, *class_args, **kwargs):
-        # Lógica para eliminar la foto vieja automáticamente si se cambia por una nueva
-        if self.pk:
-            try:
-                old_profile = PerfilUsuario.objects.get(pk=self.pk)
-                if old_profile.foto and old_profile.foto != self.foto:
-                    if os.path.isfile(old_profile.foto.path):
-                        os.remove(old_profile.foto.path)
-            except PerfilUsuario.DoesNotExist:
-                pass
-        super().save(*class_args, **kwargs)
-
-
+        return self.usuario.username
+    
 
 class ReporteModeracion(models.Model):
     """Modelo para que queden registradas las notas o reportes sobre un terapeuta"""

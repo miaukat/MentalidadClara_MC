@@ -10,9 +10,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='perfilusuario',
-            name='biografia',
-            field=models.TextField(blank=True, help_text='Descripción o perfil profesional para los pacientes', null=True),
-        ),
+       
     ]

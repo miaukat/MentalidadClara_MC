@@ -16,7 +16,6 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from mentalidad_app.views import cambiar_credenciales, home, actualizar_perfil # (o las vistas que ya tengas ahí)
 from mentalidad_app.views import (
     home, registro_usuario, login_usuario, logout_usuario,
     recuperar_password, restablecer_password,
@@ -40,12 +39,11 @@ urlpatterns = [
     path('logout/', logout_usuario, name='logout'),
     path('recuperar-password/', recuperar_password, name='recuperar_password'),
     path('restablecer-password/', restablecer_password, name='restablecer_password'),
-    path('configuracion/perfil/', views.actualizar_perfil, name='actualizar_perfil'),
-    path('cambiar-password/', cambiar_credenciales, name='cambiar_credenciales'),
     
     # ── Rutas del Paciente ──
     path('dashboard/', dashboard_paciente, name='dashboard_paciente'),
     path('diario/', views.diario_personal, name='diario_personal'),
+    path('diario/verificar/', views.verificar_pin_diario, name='verificar_pin_diario'),
     path('emociones/', registrar_emocion_diario, name='registrar_emocion_diario'),
     path('mi-historial/', views.historial_emociones, name='historial_emociones'),
     path('citas/', agendar_cita, name='agendar_cita'),
