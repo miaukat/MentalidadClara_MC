@@ -8,12 +8,9 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
-
-
 """
 
 import os
-
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-y2kn@ju54k_)f@=1^2=zq%yj$&34-(o#xp^t0+lq84y1qo-934'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-y2kn@ju54k_)f@=1^2=zq%yj$&34-(o#xp^t0+lq84y1qo-934')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '.onrender.com').split(',')
 
 
 # Application definition
@@ -42,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'mentalidad_app.apps.MentalidadAppConfig',
-    
 ]
 
 MIDDLEWARE = [
@@ -108,29 +104,24 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'es-co'  # o 'es'
+LANGUAGE_CODE = 'es-co'
 TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
-USE_TZ = True  # Mantiene el soporte de zonas horarias activo
+USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
-
-# Archivos Estáticos (CSS, JavaScript, Imágenes del sitio)
 STATIC_URL = '/static/'
+
+# Carpeta donde Render juntará los archivos estáticos para producción
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Archivos Multimedia (Fotos y videos subidos por los pacientes)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Configuración para pruebas de envío de correo en Consola
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-# Cuando vayan a producción con Gmail u Outlook, usarán:
 
 LOGIN_URL = 'login'
 
