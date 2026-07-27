@@ -28,6 +28,7 @@ import json
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 import resend
+from django.template.loader import render_to_string
 
 
 def home(request):
@@ -644,20 +645,20 @@ def crear_terapeuta_admin(request):
             'especialidad': especialidad,
         }
 
-        try:
-            # Renderiza el HTML con la bienvenida y las credenciales integradas
-            mensaje_html = render_to_string('emails/bienvenida_terapeuta.html', contexto_email)
-            send_mail(
-                subject=asunto,
-                message=mensaje_texto,
-                from_email='Mentalidad Clara <onboarding@resend.dev>', # 👈 Cambiado para usar Resend correctamente
-                recipient_list=[email],
-                html_message=mensaje_html,
-                fail_silently=False
-            )
-            print("✅ Correo enviado con éxito mediante Resend")
-        except Exception as e:
-            print(f"Error al enviar correo: {e}")
+    try:
+        resend.api_key = settings.RESEND_API_KEY
+        mensaje_html = render_to_string('emails/bienvenida_terapeuta.html', contexto_email)
+        
+        params = {
+            "from": settings.DEFAULT_FROM_EMAIL,
+            "to": [email],
+            "subject": asunto,
+            "html": mensaje_html,  # 👈 Sin comillas para que sea la variable
+        }
+        resend.Emails.send(params)
+        print("✅ Correo de terapeuta enviado con éxito mediante la API de Resend")
+    except Exception as e:
+        print(f"Error al enviar correo: {e}")
 
         # Redirección al dashboard
         return redirect('dashboard_admin')
@@ -1223,17 +1224,16 @@ def crear_reporte_comportamiento(request, paciente_id):
 
 def enviar_correo_bienvenida(usuario):
     asunto = "🌱 ¡Bienvenido/a a Mentalidad Clara!"
-    remitente = settings.DEFAULT_FROM_EMAIL
-    destinatario = [usuario.email]
-
-    # Cargar plantilla HTML con datos del usuario
     html_content = render_to_string('emails/bienvenida_paciente.html', {'usuario': usuario})
-    text_content = strip_tags(html_content)  # Versión en texto plano como respaldo
 
-    correo = EmailMultiAlternatives(asunto, text_content, remitente, destinatario)
-    correo.attach_alternative(html_content, "text/html")
-    
     try:
-        correo.send()
+        resend.api_key = settings.RESEND_API_KEY
+        resend.Emails.send({
+            "from": settings.DEFAULT_FROM_EMAIL,
+            "to": [usuario.email],
+            "subject": asunto,
+            "html": html_content,
+        })
+        print("✅ Correo enviado con éxito")
     except Exception as e:
         print(f"Error al enviar correo: {e}")
