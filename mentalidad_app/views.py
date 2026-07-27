@@ -134,6 +134,12 @@ def login_usuario(request):
 
         # Si la autenticación es exitosa
         if user is not None:
+            # 🛑 VALIDACIÓN DE CUENTA SUSPENDIDA
+            if hasattr(user, 'perfil') and not user.perfil.activo:
+                return render(request, 'mentalidad_app/compartidos/login.html', {
+                    'error': 'Tu cuenta se encuentra suspendida. Por favor, comunícate con el administrador.'
+                })
+
             login(request, user)
             
             # Redirección inteligente según el rol del usuario
