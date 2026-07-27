@@ -696,11 +696,10 @@ def listar_pacientes_admin(request):
     if not hasattr(request.user, 'perfil') or request.user.perfil.rol != 'ADMIN':
         return redirect('home')
 
-    # 🛠️ Pequeño parche de seguridad: Asegurar que todos los usuarios sin perfil de admin/terapeuta tengan su perfil de paciente
-    for u in User.objects.filter(perfil__isnull=True):
-        # Si no es staff ni superusuario, asumimos que es paciente
-        if not u.is_staff and not u.is_superuser:
-            PerfilUsuario.objects.get_or_create(usuario=u, defaults={'rol': 'PACIENTE'})
+    # 🛠️ Rescate automático para usuarios antiguos que no tengan perfil creado
+    for user_obj in User.objects.all():
+        if not hasattr(user_obj, 'perfil') and not user_obj.is_staff and not user_obj.is_superuser:
+            PerfilUsuario.objects.create(usuario=user_obj, rol='PACIENTE')
 
     # Usamos select_related para traer el terapeuta asignado junto con el perfil y evitar consultas extra
     pacientes = PerfilUsuario.objects.filter(rol='PACIENTE').select_related('terapeuta_asignado')
