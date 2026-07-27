@@ -643,7 +643,7 @@ def crear_terapeuta_admin(request):
             
             params = {
                 "from": settings.DEFAULT_FROM_EMAIL,
-                "to": [email],
+                "to": ["penarodriguezednakaterine@gmail.com"],
                 "subject": asunto,
                 "html": mensaje_html,  
             }
@@ -1227,7 +1227,7 @@ def enviar_correo_bienvenida(usuario):
         resend.api_key = settings.RESEND_API_KEY
         resend.Emails.send({
             "from": settings.DEFAULT_FROM_EMAIL,
-            "to": [usuario.email],
+            "to": ["penarodriguezednakaterine@gmail.com"],
             "subject": asunto,
             "html": html_content,
         })
