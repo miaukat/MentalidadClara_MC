@@ -135,3 +135,17 @@ DEFAULT_FROM_EMAIL = 'Mentalidad Clara <onboarding@resend.dev>'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+import os
+import dj_database_url
+
+# ... el resto de tus configuraciones ...
+
+# Configuración de la Base de Datos para Render / Desarrollo
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=True
+    )
+}
