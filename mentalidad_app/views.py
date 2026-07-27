@@ -112,10 +112,6 @@ def registro_usuario(request):
 
     return render(request, 'mentalidad_app/compartidos/registro.html')
 
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
-from django.core.mail import send_mail
 
 def login_usuario(request):
     if request.method == 'POST':

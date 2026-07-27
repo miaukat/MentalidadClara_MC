@@ -26,7 +26,6 @@ class PerfilUsuario(models.Model):
     activo = models.BooleanField(default=True)  # Para suspender o activar cuentas (Admin)
     telefono = models.CharField(max_length=15, blank=True, null=True)
 
-    foto = models.ImageField(upload_to='perfiles/', blank=True, null=True)
 
     terapeuta_asignado = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True, 
