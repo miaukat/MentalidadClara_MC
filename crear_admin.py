@@ -6,9 +6,8 @@ django.setup()
 
 from django.contrib.auth.models import User
 
-# Lee los datos de forma segura desde las variables del servidor
 USERNAME = os.environ.get("ADMIN_USER", "admin")
-EMAIL = os.environ.get("ADMIN_EMAIL", "admin@example.com")
+EMAIL = os.environ.get("ADMIN_EMAIL", "correo_por_defecto@example.com") 
 PASSWORD = os.environ.get("ADMIN_PASSWORD")
 
 if PASSWORD and not User.objects.filter(username=USERNAME).exists():

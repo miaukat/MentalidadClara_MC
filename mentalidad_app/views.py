@@ -564,8 +564,10 @@ def toggle_favorito_terapeuta(request, terapeuta_id):
 #ADMINISTRADOR
 @login_required
 def dashboard_admin(request):
-    if not hasattr(request.user, 'perfil') or request.user.perfil.rol != 'ADMIN':
-        return redirect('home')
+    # Si es superusuario de Django o tiene rol ADMIN, lo dejamos pasar
+    if not request.user.is_superuser:
+        if not hasattr(request.user, 'perfil') or request.user.perfil.rol != 'ADMIN':
+            return redirect('home')
 
     terapeutas = User.objects.filter(perfil__rol='TERAPEUTA')
     total_terapeutas = terapeutas.count()
@@ -576,7 +578,7 @@ def dashboard_admin(request):
     contexto = {
         'terapeutas': terapeutas,
         'total_terapeutas': total_terapeutas,
-        'reportes': reportes, # <--- Enviamos los reportes al HTML
+        'reportes': reportes,
     }
     return render(request, 'mentalidad_app/admin/dashboard_admin.html', contexto)
 
