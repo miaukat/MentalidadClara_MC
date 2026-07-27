@@ -626,18 +626,7 @@ def crear_terapeuta_admin(request):
 
         # Configurar correo electrónico con las credenciales en texto plano por si acaso
         asunto = 'Bienvenido a Mentalidad Clara - Credenciales de Acceso'
-        mensaje_texto = (
-            f"Hola Dr(a). {nombre} {apellido},\n\n"
-            f"Se ha creado tu cuenta institucional como Terapeuta en Mentalidad Clara.\n\n"
-            f"Tus datos de acceso son:\n"
-            f"Usuario: {username}\n"
-            f"Contraseña temporal: {password_temporal}\n\n"
-            f"Especialidad: {especialidad}\n\n"
-            f"Te recomendamos iniciar sesión y cambiar tu contraseña por seguridad.\n"
-            f"¡Bienvenido al equipo!"
-        )
-
-        # Contexto que se inyecta tanto en el texto plano como en el HTML
+        
         contexto_email = {
             'usuario': nuevo_usuario,
             'nombre': nombre,
@@ -647,22 +636,23 @@ def crear_terapeuta_admin(request):
             'especialidad': especialidad,
         }
 
-    try:
-        resend.api_key = settings.RESEND_API_KEY
-        mensaje_html = render_to_string('emails/bienvenida_terapeuta.html', contexto_email)
-        
-        params = {
-            "from": settings.DEFAULT_FROM_EMAIL,
-            "to": [email],
-            "subject": asunto,
-            "html": mensaje_html,  # 👈 Sin comillas para que sea la variable
-        }
-        resend.Emails.send(params)
-        print("✅ Correo de terapeuta enviado con éxito mediante la API de Resend")
-    except Exception as e:
-        print(f"Error al enviar correo: {e}")
+        # 🛠️ TODO ESTE BLOQUE AHORA SÍ ESTÁ DENTRO DEL POST Y DEBIDAMENTE INDENTADO
+        try:
+            resend.api_key = settings.RESEND_API_KEY
+            mensaje_html = render_to_string('emails/bienvenida_terapeuta.html', contexto_email)
+            
+            params = {
+                "from": settings.DEFAULT_FROM_EMAIL,
+                "to": [email],
+                "subject": asunto,
+                "html": mensaje_html,  
+            }
+            resend.Emails.send(params)
+            print("✅ Correo de terapeuta enviado con éxito mediante la API de Resend")
+        except Exception as e:
+            print(f"Error al enviar correo: {e}")
 
-        # Redirección al dashboard
+        # Redirección al dashboard solo cuando termine de procesar el formulario POST
         return redirect('dashboard_admin')
 
     return render(request, 'mentalidad_app/admin/crear_terapeuta.html')
