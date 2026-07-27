@@ -27,8 +27,7 @@ from django.db.models import Q
 import json
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-
-
+import resend
 
 
 def home(request):
@@ -641,7 +640,7 @@ def crear_terapeuta_admin(request):
             'nombre': nombre,
             'apellido': apellido,
             'username': username,
-            'password': password_temporal, # 👈 Esta variable es vital para que se pinte en el HTML
+            'password': password_temporal, 
             'especialidad': especialidad,
         }
 
@@ -651,12 +650,12 @@ def crear_terapeuta_admin(request):
             send_mail(
                 subject=asunto,
                 message=mensaje_texto,
-                from_email='mentalidadclara.soporte@gmail.com',
+                from_email='Mentalidad Clara <onboarding@resend.dev>', # 👈 Cambiado para usar Resend correctamente
                 recipient_list=[email],
                 html_message=mensaje_html,
                 fail_silently=False
             )
-            print("✅ Correo enviado con éxito")
+            print("✅ Correo enviado con éxito mediante Resend")
         except Exception as e:
             print(f"Error al enviar correo: {e}")
 
